@@ -17,7 +17,7 @@ import requests
 
 # Initialize Flask application
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Set a secret key for Flask sessions. Change this to a secure random value.
+app.secret_key = '1234'  # Set a secret key for Flask sessions. Change this to a secure random value.
 
 # Initialize OAuth for Flask
 oauth = OAuth(app)
@@ -27,12 +27,12 @@ webex = oauth.remote_app(
     'webex',
     consumer_key='C4fbcf5b9c6a3cee01b8079fffff52c03d4d2b6e8d7338881b7993318fc639d7e',  # Webex OAuth client ID
     consumer_secret='dd39b9daae5adb1c7a9759683858c83f92fa2e8e183bdfcd0af6019e0ba83571',  # Webex OAuth client secret
-    request_token_params={'scope': 'spark:all'},  # OAuth scopes for Webex
+    request_token_params={'scope': 'spark:all spark:kms'},# OAuth scopes for Webex
     base_url='https://api.ciscospark.com/v1/',  # Base URL for Webex
     request_token_url=None,  # No request token URL for OAuth 2.0
     access_token_method='POST',  # HTTP method for obtaining access token
     access_token_url='https://api.ciscospark.com/v1/access_token',  # URL to obtain access token
-    authorize_url='https://api.ciscospark.com/v1/authorize'  # URL for authorization
+    authorize_url='https://api.ciscospark.com/v1/authorized'  # URL for authorization
 )
 
 # Define Meraki API key and network ID
