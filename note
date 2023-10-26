@@ -6,3 +6,4 @@ OauthURL: https://webexapis.com/v1/authorize?client_id=C4fbcf5b9c6a3cee01b8079ff
 Integration ID: Y2lzY29zcGFyazovL3VzL0FQUExJQ0FUSU9OL0M0ZmJjZjViOWM2YTNjZWUwMWI4MDc5ZmZmZmY1MmMwM2Q0ZDJiNmU4ZDczMzg4ODFiNzk5MzMxOGZjNjM5ZDdl
 integration Name: Meraki Splash Oauth
 Redirect URI: http://localhost:5000/login/authorized
+Scopes: spark:all

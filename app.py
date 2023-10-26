@@ -35,30 +35,37 @@ webex = oauth.remote_app(
     base_url='https://webexapis.com/v1/',  # Base URL for Webex
     request_token_url=None,  # No request token URL for OAuth 2.0
     access_token_method='POST',  # HTTP method for obtaining access token
-    access_token_url='https://webexapis.com/v1/access_token',
-    authorize_url='https://webexapis.com/v1/authorize'
+    access_token_url='https://webexapis.com/v1/access_token',  # URL to obtain access token
+    authorize_url='https://webexapis.com/v1/authorize'  # URL for authorization
 )
 
 @app.route('/')
 def index():
-    # Render the captive portal page
+    logging.info("Serving the captive portal page.")
     return render_template_string(open("captive_portal.html").read())
 
 @app.route('/login')
 def login():
-    logging.info("Redirecting user to Webex for OAuth authentication...")
-    return webex.authorize(callback=url_for('authorized', _external=True))
+    logging.info("Initiating OAuth flow. Redirecting user to Webex for authentication...")
+    oauth_redirect = webex.authorize(callback='http://localhost:5000/login/authorized')
+    logging.debug(f"OAuth redirect URL: {oauth_redirect.location}")
+    return oauth_redirect
+
 
 @app.route('/login/authorized')
 def authorized():
     logging.info("Received callback from Webex after OAuth authentication.")
     response = webex.authorized_response()
     
-    if response is None or response.get('access_token') is None:
-        logging.error(f"Authentication failed. Reason: {request.args['error_reason']}, Error: {request.args['error_description']}")
+    if response is None:
+        logging.error("No response received from Webex.")
+        return "No response received from Webex."
+    
+    if response.get('access_token') is None:
+        logging.error(f"Authentication failed. Reason: {request.args.get('error_reason', 'N/A')}, Error: {request.args.get('error_description', 'N/A')}")
         return 'Access denied: reason={} error={}'.format(
-            request.args['error_reason'],
-            request.args['error_description']
+            request.args.get('error_reason', 'N/A'),
+            request.args.get('error_description', 'N/A')
         )
 
     logging.info("Authentication successful. Storing access token in session.")
@@ -67,7 +74,7 @@ def authorized():
     headers = {
         'Authorization': f"Bearer {response['access_token']}"
     }
-    user_info = requests.get('https://api.ciscospark.com/v1/me', headers=headers).json()
+    user_info = requests.get('https://webexapis.com/v1/me', headers=headers).json()
     logging.debug(f"User details: {user_info}")
 
     return 'Logged in successfully!'
