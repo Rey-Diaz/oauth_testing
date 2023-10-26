@@ -51,21 +51,29 @@ def login():
     logging.debug(f"OAuth redirect URL: {oauth_redirect.location}")
     return oauth_redirect
 
+import requests
 
 @app.route('/login/authorized')
 def authorized():
     logging.info("Received callback from Webex after OAuth authentication.")
-    response = webex.authorized_response()
     
-    if response is None:
-        logging.error("No response received from Webex.")
-        return "No response received from Webex."
+    code = request.args.get('code')
+    data = {
+        'grant_type': 'authorization_code',
+        'client_id': 'YOUR_CLIENT_ID',
+        'client_secret': 'YOUR_CLIENT_SECRET',
+        'code': code,
+        'redirect_uri': 'http://localhost:5000/login/authorized'
+    }
+    response = requests.post('https://webexapis.com/v1/access_token', data=data).json()
     
-    if response.get('access_token') is None:
-        logging.error(f"Authentication failed. Reason: {request.args.get('error_reason', 'N/A')}, Error: {request.args.get('error_description', 'N/A')}")
+    logging.debug(f"Webex API response: {response}")
+
+    if 'access_token' not in response:
+        logging.error(f"Authentication failed. Full response: {response}")
         return 'Access denied: reason={} error={}'.format(
-            request.args.get('error_reason', 'N/A'),
-            request.args.get('error_description', 'N/A')
+            response.get('error_reason', 'N/A'),
+            response.get('error_description', 'N/A')
         )
 
     logging.info("Authentication successful. Storing access token in session.")
@@ -78,6 +86,7 @@ def authorized():
     logging.debug(f"User details: {user_info}")
 
     return 'Logged in successfully!'
+
 
 @webex.tokengetter
 def get_webex_oauth_token():
