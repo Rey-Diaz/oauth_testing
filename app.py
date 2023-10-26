@@ -15,6 +15,7 @@ from flask import Flask, redirect, request, render_template_string, session, url
 from flask_oauthlib.client import OAuth
 import requests
 import logging
+from config import WEBEX_CONFIG
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -29,14 +30,14 @@ logging.basicConfig(level=logging.DEBUG)
 # Define Webex OAuth configuration
 webex = oauth.remote_app(
     'webex',
-    consumer_key='C4fbcf5b9c6a3cee01b8079fffff52c03d4d2b6e8d7338881b7993318fc639d7e',  # Webex OAuth client ID
-    consumer_secret='dd39b9daae5adb1c7a9759683858c83f92fa2e8e183bdfcd0af6019e0ba83571',  # Webex OAuth client secret
-    request_token_params={'scope': 'spark:all spark:kms'},  # OAuth scopes for Webex
-    base_url='https://webexapis.com/v1/',  # Base URL for Webex
-    request_token_url=None,  # No request token URL for OAuth 2.0
-    access_token_method='POST',  # HTTP method for obtaining access token
-    access_token_url='https://webexapis.com/v1/access_token',  # URL to obtain access token
-    authorize_url='https://webexapis.com/v1/authorize'  # URL for authorization
+    consumer_key=WEBEX_CONFIG['CONSUMER_KEY'],
+    consumer_secret=WEBEX_CONFIG['CONSUMER_SECRET'],
+    request_token_params={'scope': WEBEX_CONFIG['SCOPE']},
+    base_url=WEBEX_CONFIG['BASE_URL'],
+    request_token_url=None,
+    access_token_method=WEBEX_CONFIG['ACCESS_TOKEN_METHOD'],
+    access_token_url=WEBEX_CONFIG['ACCESS_TOKEN_URL'],
+    authorize_url=WEBEX_CONFIG['AUTHORIZE_URL']
 )
 
 @app.route('/')
@@ -47,11 +48,9 @@ def index():
 @app.route('/login')
 def login():
     logging.info("Initiating OAuth flow. Redirecting user to Webex for authentication...")
-    oauth_redirect = webex.authorize(callback='http://localhost:5000/login/authorized')
+    oauth_redirect = webex.authorize(callback=WEBEX_CONFIG['REDIRECT_URI'])
     logging.debug(f"OAuth redirect URL: {oauth_redirect.location}")
     return oauth_redirect
-
-import requests
 
 @app.route('/login/authorized')
 def authorized():
@@ -59,13 +58,13 @@ def authorized():
     
     code = request.args.get('code')
     data = {
-        'grant_type': 'authorization_code',
-        'client_id': 'YOUR_CLIENT_ID',
-        'client_secret': 'YOUR_CLIENT_SECRET',
+        'grant_type': WEBEX_CONFIG['GRANT_TYPE'],
+        'client_id': WEBEX_CONFIG['CONSUMER_KEY'],
+        'client_secret': WEBEX_CONFIG['CONSUMER_SECRET'],
         'code': code,
-        'redirect_uri': 'http://localhost:5000/login/authorized'
+        'redirect_uri': WEBEX_CONFIG['REDIRECT_URI']
     }
-    response = requests.post('https://webexapis.com/v1/access_token', data=data).json()
+    response = requests.post(WEBEX_CONFIG['ACCESS_TOKEN_URL'], data=data).json()
     
     logging.debug(f"Webex API response: {response}")
 
@@ -86,7 +85,6 @@ def authorized():
     logging.debug(f"User details: {user_info}")
 
     return 'Logged in successfully!'
-
 
 @webex.tokengetter
 def get_webex_oauth_token():
