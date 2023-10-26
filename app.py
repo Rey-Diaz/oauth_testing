@@ -27,40 +27,13 @@ webex = oauth.remote_app(
     'webex',
     consumer_key='C4fbcf5b9c6a3cee01b8079fffff52c03d4d2b6e8d7338881b7993318fc639d7e',  # Webex OAuth client ID
     consumer_secret='dd39b9daae5adb1c7a9759683858c83f92fa2e8e183bdfcd0af6019e0ba83571',  # Webex OAuth client secret
-    request_token_params={'scope': 'spark:all spark:kms'},# OAuth scopes for Webex
+    request_token_params={'scope': 'spark:all spark:kms'},  # OAuth scopes for Webex
     base_url='https://api.ciscospark.com/v1/',  # Base URL for Webex
     request_token_url=None,  # No request token URL for OAuth 2.0
     access_token_method='POST',  # HTTP method for obtaining access token
     access_token_url='https://api.ciscospark.com/v1/access_token',  # URL to obtain access token
-    authorize_url='https://api.ciscospark.com/v1/authorized'  # URL for authorization
+    authorize_url='https://api.ciscospark.com/v1/authorize'  # URL for authorization
 )
-
-# Define Meraki API key and network ID
-MERAKI_API_KEY = '91827e9abc34e868af813bb69ce997048c968dc6'
-NETWORK_ID = 'L_686798943174017585'
-
-# Function to grant access to a specific client device in Meraki
-def grant_access_in_meraki(client_mac_address):
-    # Construct URL for Meraki API endpoint
-    url = f"https://api.meraki.com/api/v1/networks/{NETWORK_ID}/clients/{client_mac_address}/policy"
-    # Define policy details (modify as needed)
-    policy = {
-        "devicePolicy": "Group policy or SSID policy ID",
-        "devicePolicyType": "Group policy or SSID policy type"
-    }
-    # Define headers for the API request
-    headers = {
-        'X-Cisco-Meraki-API-Key': MERAKI_API_KEY,
-        'Content-Type': 'application/json'
-    }
-    # Send PUT request to Meraki API to update client policy
-    response = requests.put(url, json=policy, headers=headers)
-
-    # Check if the request was successful
-    if response.status_code == 200:
-        return True
-    else:
-        return False
 
 @app.route('/')
 def index():
@@ -76,6 +49,7 @@ def login():
 def authorized():
     # Handle the callback after Webex OAuth authentication
     response = webex.authorized_response()
+    
     # Check if the authentication was successful
     if response is None or response.get('access_token') is None:
         return 'Access denied: reason={} error={}'.format(
@@ -85,15 +59,16 @@ def authorized():
 
     # Store the access token in the session
     session['webex_token'] = (response['access_token'], '')
+    
+    # Here, you can use the access token to make authorized requests to Webex API.
+    # For example, to get user details:
+    headers = {
+        'Authorization': f"Bearer {response['access_token']}"
+    }
+    user_info = requests.get('https://api.ciscospark.com/v1/me', headers=headers).json()
+    print(user_info)  # Print user details for debugging
 
-    # Extract the client's MAC address from the Webex response (modify as per your Webex integration)
-    client_mac_address = 'CLIENT_MAC_ADDRESS_FROM_WEBEX'
-
-    # Grant access in Meraki using the extracted MAC address
-    if grant_access_in_meraki(client_mac_address):
-        return 'Logged in successfully! Access granted in Meraki.'
-    else:
-        return 'Logged in successfully, but access was not granted in Meraki.'
+    return 'Logged in successfully!'
 
 @webex.tokengetter
 def get_webex_oauth_token():
