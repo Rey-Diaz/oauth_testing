@@ -1,0 +1,8 @@
+Client ID: C4fbcf5b9c6a3cee01b8079fffff52c03d4d2b6e8d7338881b7993318fc639d7e
+Client Secret: dd39b9daae5adb1c7a9759683858c83f92fa2e8e183bdfcd0af6019e0ba83571
+
+OauthURL: https://webexapis.com/v1/authorize?client_id=C4fbcf5b9c6a3cee01b8079fffff52c03d4d2b6e8d7338881b7993318fc639d7e&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2Flogin%2Fauthorized&scope=spark%3Aall%20spark%3Akms&state=set_state_here
+
+Integration ID: Y2lzY29zcGFyazovL3VzL0FQUExJQ0FUSU9OL0M0ZmJjZjViOWM2YTNjZWUwMWI4MDc5ZmZmZmY1MmMwM2Q0ZDJiNmU4ZDczMzg4ODFiNzk5MzMxOGZjNjM5ZDdl
+integration Name: Meraki Splash Oauth
+Redirect URI: http://localhost:5000/login/authorized
